@@ -1,14 +1,57 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { LogIn, UserPlus, Eye, EyeOff, Zap, BookOpen, Timer, Trophy } from "lucide-react";
+"use client"
 
-export const metadata: Metadata = {
-  title: "Sign In · Get Started",
-  description:
-    "Sign in or create your free AuraStudy account to start tracking your study sessions, subjects, and progress.",
-};
+import { useState } from "react"
+import { LogIn, UserPlus, Eye, EyeOff, Zap, BookOpen, Timer, Trophy } from "lucide-react"
+import { signIn } from "next-auth/react"
+import { registerUser } from "@/actions/auth"
+import { useRouter } from "next/navigation"
 
 export default function AuthPage() {
+  const [isLogin, setIsLogin] = useState(true)
+  const [showPassword, setShowPassword] = useState(false)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+    setLoading(true)
+
+    if (isLogin) {
+      const res = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      })
+      if (res?.error) {
+        setError("Invalid credentials")
+      } else {
+        router.push("/")
+      }
+    } else {
+      const formData = new FormData()
+      formData.append("email", email)
+      formData.append("password", password)
+      const res = await registerUser(formData)
+      if (res.error) {
+        setError(res.error)
+      } else {
+        const signRes = await signIn("credentials", {
+          redirect: false,
+          email,
+          password,
+        })
+        if (!signRes?.error) {
+          router.push("/")
+        }
+      }
+    }
+    setLoading(false)
+  }
+
   return (
     <div
       style={{
@@ -68,44 +111,46 @@ export default function AuthPage() {
             }}
           >
             <button
-              id="auth-tab-signin"
+              onClick={() => { setIsLogin(true); setError(""); }}
               type="button"
               style={{
                 flex: 1,
                 padding: "10px",
                 borderRadius: "9px",
-                background: "rgba(124,58,237,0.2)",
-                border: "1px solid rgba(124,58,237,0.3)",
-                color: "var(--color-primary-light)",
+                background: isLogin ? "rgba(124,58,237,0.2)" : "transparent",
+                border: isLogin ? "1px solid rgba(124,58,237,0.3)" : "1px solid transparent",
+                color: isLogin ? "var(--color-primary-light)" : "var(--text-muted)",
                 fontSize: "13px",
-                fontWeight: 700,
+                fontWeight: isLogin ? 700 : 500,
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 gap: "6px",
+                transition: "all 0.2s"
               }}
             >
               <LogIn size={14} />
               Sign In
             </button>
             <button
-              id="auth-tab-register"
+              onClick={() => { setIsLogin(false); setError(""); }}
               type="button"
               style={{
                 flex: 1,
                 padding: "10px",
                 borderRadius: "9px",
-                background: "transparent",
-                border: "1px solid transparent",
-                color: "var(--text-muted)",
+                background: !isLogin ? "rgba(124,58,237,0.2)" : "transparent",
+                border: !isLogin ? "1px solid rgba(124,58,237,0.3)" : "1px solid transparent",
+                color: !isLogin ? "var(--color-primary-light)" : "var(--text-muted)",
                 fontSize: "13px",
-                fontWeight: 500,
+                fontWeight: !isLogin ? 700 : 500,
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 gap: "6px",
+                transition: "all 0.2s"
               }}
             >
               <UserPlus size={14} />
@@ -113,18 +158,21 @@ export default function AuthPage() {
             </button>
           </div>
 
+          {error && <div style={{ color: "#ef4444", fontSize: "13px", marginBottom: "16px", textAlign: "center" }}>{error}</div>}
+
           {/* Form Fields */}
-          <form id="auth-form" noValidate>
+          <form onSubmit={handleSubmit} noValidate>
             <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "24px" }}>
               <div>
-                <label htmlFor="auth-email" style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-muted)", display: "block", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                <label style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-muted)", display: "block", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                   Email Address
                 </label>
                 <input
-                  id="auth-email"
                   type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  autoComplete="email"
+                  required
                   style={{
                     width: "100%",
                     padding: "12px 16px",
@@ -134,21 +182,21 @@ export default function AuthPage() {
                     color: "var(--text-main)",
                     fontSize: "14px",
                     outline: "none",
-                    transition: "border-color 0.2s",
                   }}
                 />
               </div>
 
               <div>
-                <label htmlFor="auth-password" style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-muted)", display: "block", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                <label style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-muted)", display: "block", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                   Password
                 </label>
                 <div style={{ position: "relative" }}>
                   <input
-                    id="auth-password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
-                    autoComplete="current-password"
+                    required
                     style={{
                       width: "100%",
                       padding: "12px 44px 12px 16px",
@@ -161,9 +209,8 @@ export default function AuthPage() {
                     }}
                   />
                   <button
-                    id="auth-toggle-password"
                     type="button"
-                    aria-label="Toggle password visibility"
+                    onClick={() => setShowPassword(!showPassword)}
                     style={{
                       position: "absolute",
                       right: "12px",
@@ -176,28 +223,30 @@ export default function AuthPage() {
                       padding: "4px",
                     }}
                   >
-                    <Eye size={16} />
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
               </div>
             </div>
 
             <button
-              id="auth-submit-btn"
               type="submit"
+              disabled={loading}
               className="btn-primary"
-              style={{ width: "100%", justifyContent: "center", padding: "14px", fontSize: "15px" }}
+              style={{ width: "100%", justifyContent: "center", padding: "14px", fontSize: "15px", opacity: loading ? 0.7 : 1 }}
             >
-              <LogIn size={16} />
-              Sign In to AuraStudy
+              {isLogin ? <LogIn size={16} /> : <UserPlus size={16} />}
+              {loading ? "Processing..." : isLogin ? "Sign In to AuraStudy" : "Create Account"}
             </button>
           </form>
 
-          <div style={{ textAlign: "center", marginTop: "20px" }}>
-            <a href="#" id="auth-forgot-password" style={{ fontSize: "13px", color: "var(--color-primary-light)", textDecoration: "none" }}>
-              Forgot your password?
-            </a>
-          </div>
+          {isLogin && (
+            <div style={{ textAlign: "center", marginTop: "20px" }}>
+              <a href="#" style={{ fontSize: "13px", color: "var(--color-primary-light)", textDecoration: "none" }}>
+                Forgot your password?
+              </a>
+            </div>
+          )}
 
           {/* Divider */}
           <div style={{ display: "flex", alignItems: "center", gap: "12px", margin: "24px 0" }}>
@@ -208,11 +257,7 @@ export default function AuthPage() {
 
           {/* OAuth Stubs */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-            <button id="auth-google-btn" type="button" className="btn-secondary" style={{ fontSize: "13px", padding: "10px", justifyContent: "center" }}>
-              <span style={{ fontSize: "16px" }}>G</span>
-              Google
-            </button>
-            <button id="auth-github-btn" type="button" className="btn-secondary" style={{ fontSize: "13px", padding: "10px", justifyContent: "center" }}>
+            <button type="button" onClick={() => signIn("github", { callbackUrl: "/" })} className="btn-secondary" style={{ fontSize: "13px", padding: "10px", justifyContent: "center" }}>
               <span style={{ fontSize: "16px" }}>⌘</span>
               GitHub
             </button>
@@ -237,5 +282,5 @@ export default function AuthPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

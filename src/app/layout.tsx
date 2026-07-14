@@ -3,6 +3,7 @@ import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { Providers } from "@/components/providers";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -45,21 +46,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
+    <html lang="en" className={`${inter.variable} ${outfit.variable}`} suppressHydrationWarning>
       <body className="font-sans antialiased" style={{ fontFamily: "var(--font-inter), sans-serif" }}>
-        {/* Ambient background blobs */}
-        <div className="ambient-bg" aria-hidden="true" />
+        <Providers>
+          {/* Ambient background blobs */}
+          <div className="ambient-bg" aria-hidden="true" />
 
-        {/* Nav */}
-        <Navbar />
+          {/* Nav */}
+          <Navbar />
 
-        {/* Main content */}
-        <main style={{ position: "relative", zIndex: 1, minHeight: "100vh" }}>
-          {children}
-        </main>
+          {/* Main content */}
+          <main style={{ position: "relative", zIndex: 1, minHeight: "100vh" }}>
+            {children}
+          </main>
 
-        {/* Footer */}
-        <Footer />
+          {/* Footer */}
+          <Footer />
+        </Providers>
       </body>
     </html>
   );

@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
+import { useSession, signOut } from "next-auth/react";
 import {
   BookOpen,
   Timer,
@@ -14,6 +16,10 @@ import {
   Menu,
   X,
   Zap,
+  Sun,
+  Moon,
+  LogOut,
+  User,
 } from "lucide-react";
 
 const NAV_LINKS = [
@@ -30,6 +36,10 @@ const NAV_LINKS = [
 export default function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const { data: session } = useSession();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   return (
     <header
@@ -124,14 +134,53 @@ export default function Navbar() {
 
         {/* ── Right Actions ── */}
         <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
-          <Link
-            href="/auth"
-            id="nav-cta"
-            className="btn-primary hidden-mobile"
-            style={{ padding: "8px 18px", fontSize: "13px", borderRadius: "8px" }}
-          >
-            Get Started
-          </Link>
+          {/* Dark mode toggle */}
+          {mounted && (
+            <button
+              id="nav-theme-toggle"
+              aria-label="Toggle dark mode"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              style={{
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid var(--border-subtle)",
+                borderRadius: "8px",
+                color: "var(--text-muted)",
+                cursor: "pointer",
+                padding: "6px 8px",
+                display: "flex",
+                alignItems: "center",
+                transition: "all 0.2s",
+              }}
+            >
+              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+          )}
+
+          {/* Auth CTA */}
+          {session ? (
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }} className="hidden-mobile">
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", padding: "6px 12px", background: "rgba(124,58,237,0.1)", border: "1px solid rgba(124,58,237,0.2)", borderRadius: "8px" }}>
+                <User size={14} color="var(--color-primary-light)" />
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--color-primary-light)" }}>{session.user?.name || session.user?.email?.split("@")[0]}</span>
+              </div>
+              <button
+                onClick={() => signOut()}
+                className="btn-secondary"
+                style={{ padding: "6px 12px", fontSize: "13px", display: "flex", alignItems: "center", gap: "4px" }}
+              >
+                <LogOut size={14} /> Sign Out
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/auth"
+              id="nav-cta"
+              className="btn-primary hidden-mobile"
+              style={{ padding: "8px 18px", fontSize: "13px", borderRadius: "8px" }}
+            >
+              Get Started
+            </Link>
+          )}
 
           {/* Mobile hamburger */}
           <button
