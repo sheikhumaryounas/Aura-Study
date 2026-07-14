@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded square background -->
+  <rect width="512" height="512" rx="108" fill="url(#g)"/>
+  <!-- Lightning bolt: Lucide Zap shape, centered and scaled -->
+  <!-- Original viewBox 0 0 24 24, scaled to ~300px centered in 512 -->
+  <g transform="translate(106, 56) scale(12.5)">
+    <polygon
+      points="13,2 3,14 12,14 11,22 21,10 12,10"
+      fill="#ffffff"
+      stroke="#ffffff"
+      stroke-width="0.5"
+      stroke-linejoin="round"
+    />
+  </g>
+</svg>
