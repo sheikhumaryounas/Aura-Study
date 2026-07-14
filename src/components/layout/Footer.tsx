@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Zap, Github, Twitter, Heart } from "lucide-react";
+import { Zap, Heart, GitBranch, MessageCircle } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -116,10 +116,10 @@ export default function Footer() {
           </p>
           <div style={{ display: "flex", gap: "12px" }}>
             <a href="https://github.com" target="_blank" rel="noopener noreferrer" aria-label="GitHub" style={{ color: "var(--text-faint)", transition: "color 0.15s" }}>
-              <Github size={16} />
+              <GitBranch size={16} />
             </a>
-            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter" style={{ color: "var(--text-faint)", transition: "color 0.15s" }}>
-              <Twitter size={16} />
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter / X" style={{ color: "var(--text-faint)", transition: "color 0.15s" }}>
+              <MessageCircle size={16} />
             </a>
           </div>
         </div>
